@@ -1,0 +1,11 @@
+{
+  "buildCommand": "./vercel-build.sh",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "functions": {
+    "api/process-video/route.ts": {
+      "memory": 3008,
+      "maxDuration": 60
+    }
+  }
+} 

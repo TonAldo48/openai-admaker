@@ -149,12 +149,48 @@ export default function Home() {
     e.stopPropagation(); // Prevent triggering file upload click
     if (!mediaSource) return;
 
-    const a = document.createElement('a');
-    a.href = mediaSource;
-    a.download = `dotify-${mediaType}-${Date.now()}.${mediaType === 'image' ? 'png' : 'mp4'}`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    if (mediaType === 'image') {
+      // Get the canvas element
+      const canvas = document.querySelector('canvas');
+      if (!canvas) {
+        toast({
+          title: "Error",
+          description: "Could not find the processed image",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Convert canvas to blob
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          toast({
+            title: "Error",
+            description: "Could not process the image for download",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Create download link
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `dotify-${Date.now()}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    } else {
+      // For videos, download directly from the source
+      const a = document.createElement('a');
+      a.href = mediaSource;
+      a.download = `dotify-${Date.now()}.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
   };
 
   return (

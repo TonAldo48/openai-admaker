@@ -29,43 +29,38 @@ export async function POST(req: NextRequest): Promise<Response> {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     
-    // Save paths
-    const inputPath = path.join(process.cwd(), 'public', 'uploads', inputFilename);
-    const outputPath = path.join(process.cwd(), 'public', 'uploads', outputFilename);
+    // Save paths - use /tmp for Vercel compatibility
+    const inputPath = path.join('/tmp', inputFilename);
+    const outputPath = path.join('/tmp', outputFilename);
+    const finalOutputPath = path.join(process.cwd(), 'public', 'uploads', outputFilename);
     
     console.log(`Starting video processing for ${originalFilename}`);
     console.log(`Input path: ${inputPath}`);
     console.log(`Output path: ${outputPath}`);
+    console.log(`Final output path: ${finalOutputPath}`);
+    
+    // Ensure uploads directory exists
+    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
     
     await writeFile(inputPath, buffer);
     console.log('Video file saved, starting Python conversion...');
     
-    // Process video using Python script with virtual environment
-    const pythonProcess = spawn(
-      path.join(process.cwd(), '.venv', 'bin', 'python3'),
-      [
-        path.join(process.cwd(), 'scripts', 'process_video.py'),
-        inputPath,
-        outputPath,
-        dotSize as string,
-        spacing as string
-      ]
-    );
+    // Process video using Python script
+    const pythonProcess = spawn('python3', [
+      path.join(process.cwd(), 'scripts', 'process_video.py'),
+      inputPath,
+      outputPath,
+      dotSize as string,
+      spacing as string
+    ]);
 
     // Handle Python script output for progress updates
     pythonProcess.stdout.on('data', (data) => {
       const output = data.toString().trim();
-      
-      // Log all output lines
-      output.split('\n').forEach((line: string) => {
-        if (line.startsWith('Progress:')) {
-          console.log(`\x1b[36m${line}\x1b[0m`); // Cyan color for progress
-        } else if (line.startsWith('Error:')) {
-          console.error(`\x1b[31m${line}\x1b[0m`); // Red color for errors
-        } else if (line.startsWith('Status:')) {
-          console.log(`\x1b[32m${line}\x1b[0m`); // Green color for status
-        }
-      });
+      console.log(`Python output: ${output}`);
     });
 
     // Handle Python script errors
@@ -74,7 +69,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     });
 
     return new Promise<Response>((resolve) => {
-      pythonProcess.on('close', (code) => {
+      pythonProcess.on('close', async (code) => {
         // Clean up input file
         try {
           fs.unlinkSync(inputPath);
@@ -92,11 +87,22 @@ export async function POST(req: NextRequest): Promise<Response> {
           return;
         }
 
-        console.log('Video processing completed successfully');
-        resolve(NextResponse.json({
-          url: `/uploads/${outputFilename}`,
-          message: 'Video processed successfully'
-        }));
+        try {
+          // Move the processed file from /tmp to public/uploads
+          await fs.promises.copyFile(outputPath, finalOutputPath);
+          fs.unlinkSync(outputPath); // Clean up temp output file
+          console.log('Video processing completed successfully');
+          resolve(NextResponse.json({
+            url: `/uploads/${outputFilename}`,
+            message: 'Video processed successfully'
+          }));
+        } catch (error) {
+          console.error('Error moving processed file:', error);
+          resolve(NextResponse.json(
+            { error: 'Failed to save processed video' },
+            { status: 500 }
+          ));
+        }
       });
 
       pythonProcess.on('error', (error) => {
