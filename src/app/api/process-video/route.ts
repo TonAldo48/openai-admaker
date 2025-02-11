@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
 
 export const runtime = 'edge';
-export const maxDuration = 300; // 5 minutes
+export const maxDuration = 60; // Maximum allowed on Hobby plan
 
 export async function POST(req: NextRequest): Promise<Response> {
   try {
