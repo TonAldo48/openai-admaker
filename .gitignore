@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Service account files
+**/service-account*.json
+**/serviceAccount*.json
+
+# Environment files
+.env*
+!.env.example
