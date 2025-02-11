@@ -3,7 +3,7 @@
   "installCommand": "npm install",
   "framework": "nextjs",
   "functions": {
-    "api/process-video/route.ts": {
+    "src/app/api/process-video/route.ts": {
       "memory": 1024,
       "maxDuration": 60
     }
