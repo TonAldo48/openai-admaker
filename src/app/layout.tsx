@@ -8,19 +8,20 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "OpenAI Dot Matrix Generator",
-  description: "Transform your images into stunning dot matrix art, inspired by OpenAI's Super Bowl ad",
+  description: "Convert your videos into a beautiful dot matrix animation",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body className={inter.className}>
         {children}
         <Toaster />
+        <Analytics />
       </body>
     </html>
   );
