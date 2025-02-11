@@ -374,7 +374,7 @@ export default function Home() {
             </Dialog>
             <span className="text-white/40">|</span>
             <a 
-              href="https://github.com/yourusername/dotify" 
+              href="https://github.com/TonAldo48/dotify" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-white/60 hover:text-white/80 transition-colors flex items-center gap-1.5"
