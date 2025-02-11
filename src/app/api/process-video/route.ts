@@ -4,7 +4,7 @@ import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest): Promise<Response> {
   try {
     const formData = await req.formData();
     const file = formData.get('video') as File;
@@ -59,7 +59,6 @@ export async function POST(req: NextRequest) {
       // Log all output lines
       output.split('\n').forEach((line: string) => {
         if (line.startsWith('Progress:')) {
-          const progress = parseFloat(line.split(':')[1]);
           console.log(`\x1b[36m${line}\x1b[0m`); // Cyan color for progress
         } else if (line.startsWith('Error:')) {
           console.error(`\x1b[31m${line}\x1b[0m`); // Red color for errors
@@ -74,7 +73,7 @@ export async function POST(req: NextRequest) {
       console.error(`Python Error: ${data.toString()}`);
     });
 
-    return new Promise((resolve) => {
+    return new Promise<Response>((resolve) => {
       pythonProcess.on('close', (code) => {
         // Clean up input file
         try {

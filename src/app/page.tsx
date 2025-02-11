@@ -15,7 +15,7 @@ import {
 import DotMatrix from "@/components/DotMatrix";
 import { DotMatrixVideo } from "@/components/DotMatrixVideo";
 import Image from "next/image";
-import { Loader2, Upload, Download, X, HelpCircle } from "lucide-react";
+import { Loader2, Upload, Download, X } from "lucide-react";
 
 export default function Home() {
   const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null);
@@ -100,7 +100,7 @@ export default function Home() {
           title: "Video processed",
           description: "Your video has been converted to dot matrix style",
         });
-      } catch (error) {
+      } catch {
         toast({
           title: "Processing failed",
           description: "There was an error processing your video",
