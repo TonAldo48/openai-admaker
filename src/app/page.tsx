@@ -42,6 +42,19 @@ export default function Home() {
 
     if (!file) return;
 
+    if (file.type.startsWith('video/')) {
+      toast({
+        title: "Video Processing Coming Soon!",
+        description: "Video processing is currently under development. Please try uploading an image instead.",
+        variant: "default",
+      });
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
     setIsLoading(true);
     setProgress(0);
 
@@ -77,44 +90,11 @@ export default function Home() {
       };
 
       reader.readAsDataURL(file);
-    } else if (file.type.startsWith('video/')) {
-      setMediaType('video');
-      const formData = new FormData();
-      formData.append('video', file);
-      formData.append('dotSize', dotSize[0].toString());
-      formData.append('spacing', spacing[0].toString());
-
-      try {
-        const response = await fetch('/api/process-video', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to process video');
-        }
-
-        const data = await response.json();
-        setMediaSource(data.url);
-        toast({
-          title: "Video processed",
-          description: "Your video has been converted to dot matrix style",
-        });
-      } catch {
-        toast({
-          title: "Processing failed",
-          description: "There was an error processing your video",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-        setProgress(100);
-      }
     } else {
       setIsLoading(false);
       toast({
         title: "Invalid file type",
-        description: "Please upload an image or video file",
+        description: "Please upload an image file",
         variant: "destructive",
       });
     }
@@ -199,7 +179,7 @@ export default function Home() {
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*,video/*"
+          accept="image/*"
           onChange={handleMediaUpload}
           className="hidden"
         />
@@ -214,7 +194,10 @@ export default function Home() {
           <div>
             <h1 className="text-3xl font-medium tracking-tight mb-1">dotify</h1>
             <p className="text-white/80 text-sm">
-              Turn any image or video into elegant dot patterns
+              Turn any image into elegant dot patterns
+            </p>
+            <p className="text-white/60 text-xs mt-1">
+              Video support coming soon!
             </p>
           </div>
         </div>
@@ -391,7 +374,7 @@ export default function Home() {
             </Dialog>
             <span className="text-white/40">|</span>
             <a 
-              href="https://github.com/yourusername/dotify" 
+              href="https://github.com/TonAldo48/dotify" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-white/60 hover:text-white/80 transition-colors flex items-center gap-1.5"
